@@ -1,0 +1,21 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "Express.js REST API for NexusPM Project Management System",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "server": "node index.js",
+    "dev": "node index.js"
+  },
+  "dependencies": {
+    "@clerk/backend": "^1.24.1",
+    "@prisma/client": "^6.4.1",
+    "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "inngest": "^3.31.0"
+  }
+}

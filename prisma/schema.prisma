@@ -1,0 +1,130 @@
+// Prisma Schema for Neon PostgreSQL
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+model User {
+  id             String               @id @default(uuid())
+  clerkId        String               @unique
+  email          String               @unique
+  name           String
+  avatar         String?
+  memberships    OrganizationMember[]
+  createdTasks   Task[]               @relation("TaskCreator")
+  assignedTasks  Task[]               @relation("TaskAssignee")
+  comments       Comment[]
+  notifications  Notification[]
+  activities     ActivityLog[]
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+}
+
+model Organization {
+  id          String               @id @default(uuid())
+  name        String
+  slug        String               @unique
+  description String?
+  ownerId     String
+  members     OrganizationMember[]
+  projects    Project[]
+  tasks       Task[]
+  activities  ActivityLog[]
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+}
+
+model OrganizationMember {
+  id             String       @id @default(uuid())
+  role           String       @default("MEMBER") // OWNER, ADMIN, MEMBER
+  organizationId String
+  userId         String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([organizationId, userId])
+}
+
+model Project {
+  id             String        @id @default(uuid())
+  name           String
+  description    String?
+  status         String        @default("ACTIVE") // PLANNING, ACTIVE, ON_HOLD, COMPLETED
+  priority       String        @default("MEDIUM") // LOW, MEDIUM, HIGH
+  startDate      DateTime?
+  dueDate        DateTime?
+  progress       Int           @default(0) // Automatically updated percentage (0 - 100)
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  tasks          Task[]
+  activities     ActivityLog[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Task {
+  id             String        @id @default(uuid())
+  title          String
+  description    String?
+  status         String        @default("TODO") // TODO, IN_PROGRESS, COMPLETED
+  priority       String        @default("MEDIUM") // LOW, MEDIUM, HIGH
+  dueDate        DateTime?
+  position       Int           @default(0)
+  projectId      String
+  project        Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  assigneeId     String?
+  assignee       User?         @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  creatorId      String
+  creator        User          @relation("TaskCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  comments       Comment[]
+  activities     ActivityLog[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   // TASK_ASSIGNED, TASK_UPDATED, COMMENT_ADDED, DEADLINE_APPROACHING, ORG_INVITE
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+}
+
+model ActivityLog {
+  id             String        @id @default(uuid())
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projectId      String?
+  project        Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  taskId         String?
+  task           Task?         @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  userId         String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action         String        // CREATED_PROJECT, CREATED_TASK, UPDATED_STATUS, ASSIGNED_TASK, COMMENTED
+  details        String?
+  createdAt      DateTime      @default(now())
+}
