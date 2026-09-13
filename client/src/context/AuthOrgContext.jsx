@@ -66,7 +66,7 @@ export const AuthOrgProvider = ({ children, clerkUser, getToken }) => {
 
   useEffect(() => {
     loadData();
-  }, [clerkUser]);
+  }, [clerkUser?.id, getToken]);
 
   const switchOrg = (org) => {
     setActiveOrg(org);

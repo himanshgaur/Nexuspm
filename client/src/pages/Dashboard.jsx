@@ -9,6 +9,8 @@ import {
   TrendingUp,
   Activity,
   Plus,
+  Calendar,
+  RefreshCw,
 } from "lucide-react";
 import { api } from "../services/api";
 import { useAuthOrg } from "../context/AuthOrgContext";
@@ -21,14 +23,17 @@ export const Dashboard = ({ onOpenCreateProject, onOpenCreateTask, onOpenTaskDet
   const { activeOrg } = useAuthOrg();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const loadDashboard = async () => {
     try {
       setLoading(true);
+      setError(null);
       const res = await api.getDashboard();
       setData(res);
     } catch (err) {
       console.error("Failed loading dashboard:", err);
+      setError(err.message || "Failed loading dashboard data");
     } finally {
       setLoading(false);
     }
@@ -38,7 +43,7 @@ export const Dashboard = ({ onOpenCreateProject, onOpenCreateTask, onOpenTaskDet
     loadDashboard();
   }, [activeOrg?.id]);
 
-  if (loading || !data) {
+  if (loading) {
     return (
       <div className="flex-1 p-6 md:p-8 flex items-center justify-center text-slate-500">
         <div className="flex flex-col items-center gap-3">
@@ -49,7 +54,40 @@ export const Dashboard = ({ onOpenCreateProject, onOpenCreateTask, onOpenTaskDet
     );
   }
 
-  const { metrics, deadlines, recentProjects, recentTasks, activities } = data;
+  if (error || !data) {
+    return (
+      <div className="flex-1 p-6 md:p-8 flex items-center justify-center text-slate-400">
+        <div className="flex flex-col items-center gap-4 text-center max-w-sm p-6 rounded-2xl bg-slate-900 border border-slate-800">
+          <AlertTriangle className="w-8 h-8 text-amber-400" />
+          <div>
+            <h3 className="text-sm font-semibold text-white">Could not load dashboard data</h3>
+            <p className="text-xs text-slate-400 mt-1">{error || "Please try refreshing your workspace"}</p>
+          </div>
+          <button
+            onClick={loadDashboard}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-colors"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const metrics = data?.metrics || {
+    totalProjects: 0,
+    activeProjects: 0,
+    completedProjects: 0,
+    inProgressTasks: 0,
+    pendingTasks: 0,
+    completedTasks: 0,
+    overdueTasksCount: 0,
+  };
+  const deadlines = data?.deadlines || { overdue: [], dueToday: [], upcoming: [] };
+  const recentProjects = data?.recentProjects || [];
+  const recentTasks = data?.recentTasks || [];
+  const activities = data?.activities || [];
 
   const statCards = [
     {
