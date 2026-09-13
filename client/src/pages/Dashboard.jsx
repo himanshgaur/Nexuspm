@@ -20,7 +20,7 @@ import { Avatar } from "../components/common/Avatar";
 import { Link } from "react-router-dom";
 
 export const Dashboard = ({ onOpenCreateProject, onOpenCreateTask, onOpenTaskDetail }) => {
-  const { activeOrg } = useAuthOrg();
+  const { activeOrg, loading: authLoading } = useAuthOrg();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -40,10 +40,12 @@ export const Dashboard = ({ onOpenCreateProject, onOpenCreateTask, onOpenTaskDet
   };
 
   useEffect(() => {
-    loadDashboard();
-  }, [activeOrg?.id]);
+    if (!authLoading) {
+      loadDashboard();
+    }
+  }, [activeOrg?.id, authLoading]);
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="flex-1 p-6 md:p-8 flex items-center justify-center text-slate-500">
         <div className="flex flex-col items-center gap-3">
