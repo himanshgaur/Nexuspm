@@ -2,6 +2,11 @@
   "version": 2,
   "buildCommand": "npm run vercel-build",
   "outputDirectory": "client/dist",
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "prisma/**"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",

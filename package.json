@@ -14,21 +14,21 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:seed": "node server/seed.js",
-    "vercel-build": "npm install --prefix client && npm run build --prefix client && prisma generate"
+    "postinstall": "prisma generate",
+    "vercel-build": "npm run client:install && npm run client:build && prisma generate"
   },
   "dependencies": {
     "@clerk/backend": "^1.24.1",
     "@prisma/client": "^6.4.1",
-    "better-sqlite3": "^13.0.3",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "inngest": "^3.31.0"
+    "inngest": "^3.31.0",
+    "prisma": "^6.4.1"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
-    "nodemon": "^3.1.9",
-    "prisma": "^6.4.1"
+    "nodemon": "^3.1.9"
   }
 }
