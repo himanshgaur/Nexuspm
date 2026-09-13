@@ -8,11 +8,17 @@ import {
   SignedIn,
   SignedOut,
   SignIn,
+  ClerkLoaded,
+  ClerkLoading,
   useUser,
   useAuth,
 } from "@clerk/clerk-react";
 
-const clerkPublishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const clerkPublishableKey =
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ||
+  import.meta.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+  "pk_test_c21hc2hpbmctc3VuZmlzaC00MDY1LmNsZXJrLmFjY291bnRzLmRldiQ";
+
 const hasValidClerkKey = Boolean(clerkPublishableKey && !clerkPublishableKey.includes("sample"));
 
 function ClerkAuthBridge() {
@@ -50,7 +56,17 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     {hasValidClerkKey ? (
       <ClerkProvider publishableKey={clerkPublishableKey}>
-        <ClerkAuthBridge />
+        <ClerkLoading>
+          <div className="min-h-screen bg-[#0B0F19] flex flex-col items-center justify-center p-4">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
+              <span className="text-xs text-slate-400 font-medium">Initializing workspace session...</span>
+            </div>
+          </div>
+        </ClerkLoading>
+        <ClerkLoaded>
+          <ClerkAuthBridge />
+        </ClerkLoaded>
       </ClerkProvider>
     ) : (
       <AuthOrgProvider>
